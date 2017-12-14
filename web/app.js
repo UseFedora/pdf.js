@@ -264,9 +264,6 @@ let PDFViewerApplication = {
       preferences.get('disablePageLabels').then(function resolved(value) {
         viewerPrefs['disablePageLabels'] = value;
       }),
-      preferences.get('enablePrintAutoRotate').then(function resolved(value) {
-        viewerPrefs['enablePrintAutoRotate'] = value;
-      }),
     ]).catch(function(reason) { });
   },
 
@@ -393,7 +390,6 @@ let PDFViewerApplication = {
         l10n: this.l10n,
         enhanceTextSelection: viewerPrefs['enhanceTextSelection'],
         renderInteractiveForms: viewerPrefs['renderInteractiveForms'],
-        enablePrintAutoRotate: viewerPrefs['enablePrintAutoRotate'],
       });
       pdfRenderingQueue.setViewer(this.pdfViewer);
       pdfLinkService.setViewer(this.pdfViewer);
@@ -1292,20 +1288,7 @@ let PDFViewerApplication = {
     }
 
     let pagesOverview = this.pdfViewer.getPagesOverview();
-    let printContainer = this.appConfig.printContainer;
-    let printService = PDFPrintServiceFactory.instance.createPrintService(
-      this.pdfDocument, pagesOverview, printContainer, this.l10n);
-    this.printService = printService;
     this.forceRendering();
-
-    printService.layout();
-
-    if (typeof PDFJSDev !== 'undefined' &&
-        PDFJSDev.test('FIREFOX || MOZCENTRAL')) {
-      this.externalServices.reportTelemetry({
-        type: 'print',
-      });
-    }
   },
 
   afterPrint: function pdfViewSetupAfterPrint() {
@@ -1784,9 +1767,6 @@ function webViewerUpdateViewarea(evt) {
   }
   let href =
     PDFViewerApplication.pdfLinkService.getAnchorUrl(location.pdfOpenParams);
-  PDFViewerApplication.appConfig.toolbar.viewBookmark.href = href;
-  PDFViewerApplication.appConfig.secondaryToolbar.viewBookmarkButton.href =
-    href;
 
   // Show/hide the loading indicator in the page number input element.
   let currentPage =
